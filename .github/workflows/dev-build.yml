@@ -1589,6 +1589,11 @@ jobs:
             subdirectories: true
             no-autodownload: false
             add-ld-path: lib
+          org.freedesktop.Platform.ffmpeg-full:
+            version: '23.08'
+            directory: lib/ffmpeg
+            add-ld-path: .
+            no-autodownload: false
         modules:
           - name: sdl2
             sources:
