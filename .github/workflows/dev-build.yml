@@ -18,7 +18,7 @@ name: Development Build
 
 on:
   push:
-    branches: 
+    branches:
       - develop
       - dev
       - main
@@ -45,7 +45,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Need full history for proper versioning
-      
+
       - name: Check for meaningful changes
         id: check-changes
         run: |
@@ -112,7 +112,7 @@ jobs:
           
           echo "should_build=true" >> $GITHUB_OUTPUT
           echo "Build will proceed - meaningful changes detected (including code and/or workflow changes)"
-      
+
       - name: Generate semantic version
         id: version
         run: |
@@ -218,7 +218,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Need full history for proper versioning
-      
+
       - name: Check for meaningful changes
         id: check-changes
         run: |
@@ -285,7 +285,7 @@ jobs:
           
           echo "should_build=true" >> $GITHUB_OUTPUT
           echo "Build will proceed - meaningful changes detected (including code and/or workflow changes)"
-      
+
       - name: Generate semantic version
         id: version
         run: |
@@ -349,21 +349,23 @@ jobs:
     name: Windows x64 Portable Build
     needs: setup-version
     runs-on: windows-latest
-    if: needs.setup-version.outputs.should_build == 'true'
-    
+
+    if: false #Disable for now
+    # if: needs.setup-version.outputs.should_build == 'true'
+
     steps:
     - name: Checkout
       uses: actions/checkout@v4
       with:
         submodules: 'recursive'
         fetch-depth: 0  # Needed for version info
-    
+
     - name: Display version info
       run: |
         echo "Using semantic version: ${{ needs.setup-version.outputs.version }}"
         echo "Using numeric version: ${{ needs.setup-version.outputs.numeric_version }}"
         echo "Is prerelease: ${{ needs.setup-version.outputs.is_prerelease }}"
-    
+
     - name: Setup Qt
       uses: jurplel/install-qt-action@v3
       with:
@@ -374,7 +376,7 @@ jobs:
         modules: 'qtmultimedia'
       continue-on-error: true
       id: qt_install_primary
-    
+
     - name: Retry Qt Installation (if failed)
       if: steps.qt_install_primary.outcome == 'failure'
       uses: jurplel/install-qt-action@v3
@@ -384,10 +386,10 @@ jobs:
         target: 'desktop'
         arch: 'win64_msvc2022_64'
         modules: 'qtmultimedia'
-    
+
     - name: Setup MSVC
       uses: ilammy/msvc-dev-cmd@v1
-    
+
     - name: Update version file for development build
       env:
         SEMANTIC_VERSION: ${{ needs.setup-version.outputs.version }}
@@ -395,7 +397,7 @@ jobs:
       run: |
         # Write numeric version for Windows RC compilation
         echo $env:NUMERIC_VERSION > app\version.txt
-    
+
     - name: Build portable package only
       env:
         SEMANTIC_VERSION: ${{ needs.setup-version.outputs.version }}
@@ -410,7 +412,7 @@ jobs:
           echo "Build failed with exit code $LASTEXITCODE"
           exit $LASTEXITCODE
         }
-    
+
     - name: Rename portable ZIP
       env:
         SEMANTIC_VERSION: ${{ needs.setup-version.outputs.version }}
@@ -428,7 +430,7 @@ jobs:
           Get-ChildItem -Path "build\installer-x64-release" -Recurse
           exit 1
         }
-    
+
     - name: Upload x64 Portable ZIP
       uses: actions/upload-artifact@v4
       with:
@@ -441,21 +443,22 @@ jobs:
     name: Windows ARM64 Portable Build
     needs: setup-version
     runs-on: windows-latest
-    if: needs.setup-version.outputs.should_build == 'true'
-    
+    if: false #Disable for now
+    # if: needs.setup-version.outputs.should_build == 'true'
+
     steps:
     - name: Checkout
       uses: actions/checkout@v4
       with:
         submodules: 'recursive'
         fetch-depth: 0  # Needed for version info
-    
+
     - name: Display version info
       run: |
         echo "Using semantic version: ${{ needs.setup-version.outputs.version }}"
         echo "Using numeric version: ${{ needs.setup-version.outputs.numeric_version }}"
         echo "Is prerelease: ${{ needs.setup-version.outputs.is_prerelease }}"
-    
+
     - name: Setup Qt Desktop (required for ARM64)
       uses: jurplel/install-qt-action@v3
       with:
@@ -466,7 +469,7 @@ jobs:
         modules: 'qtmultimedia'
       continue-on-error: true
       id: qt_install_desktop
-        
+
     - name: Setup Qt for ARM64
       uses: jurplel/install-qt-action@v3
       with:
@@ -477,7 +480,7 @@ jobs:
         set-env: false  # Don't let this override our Qt6_DIR - we'll set it manually
       continue-on-error: true
       id: qt_install_arm64
-    
+
     - name: Retry Qt Desktop Installation (if failed)
       if: steps.qt_install_desktop.outcome == 'failure'
       uses: jurplel/install-qt-action@v3
@@ -487,7 +490,7 @@ jobs:
         target: 'desktop'
         arch: 'win64_msvc2022_64'
         modules: 'qtmultimedia'
-    
+
     - name: Retry Qt ARM64 Installation (if failed)
       if: steps.qt_install_arm64.outcome == 'failure'
       uses: jurplel/install-qt-action@v3
@@ -497,12 +500,12 @@ jobs:
         target: 'desktop'
         arch: 'win64_msvc2022_arm64_cross_compiled'
         set-env: false
-    
+
     - name: Setup MSVC for ARM64
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: amd64_arm64  # Cross-compile from x64 host to ARM64 target
-        
+
     - name: Verify MSVC ARM64 Setup
       run: |
         echo "MSVC Environment Variables:"
@@ -511,7 +514,7 @@ jobs:
         echo "Platform: $env:Platform"
         echo "LIB: $($env:LIB -split ';' | Select-Object -First 3)"
         echo "INCLUDE: $($env:INCLUDE -split ';' | Select-Object -First 3)"
-    
+
     - name: Update version file for development build
       env:
         SEMANTIC_VERSION: ${{ needs.setup-version.outputs.version }}
@@ -519,7 +522,7 @@ jobs:
       run: |
         # Write numeric version for Windows RC compilation
         echo $env:NUMERIC_VERSION > app\version.txt
-    
+
     - name: Build ARM64 portable package only
       env:
         SEMANTIC_VERSION: ${{ needs.setup-version.outputs.version }}
@@ -554,7 +557,7 @@ jobs:
           echo "ERROR: Build script failed with exit code $buildExitCode"
           exit $buildExitCode
         }
-    
+
     - name: Rename ARM64 portable ZIP
       env:
         SEMANTIC_VERSION: ${{ needs.setup-version.outputs.version }}
@@ -572,7 +575,7 @@ jobs:
           Get-ChildItem -Path "build\installer-arm64-release" -Recurse
           exit 1
         }
-    
+
     - name: Upload ARM64 Portable ZIP
       uses: actions/upload-artifact@v4
       with:
@@ -585,15 +588,16 @@ jobs:
     name: Windows Universal Installer
     needs: setup-version
     runs-on: windows-latest
-    if: needs.setup-version.outputs.should_build == 'true'
-    
+    if: false #Disable for now
+    # if: needs.setup-version.outputs.should_build == 'true'
+
     steps:
     - name: Checkout
       uses: actions/checkout@v4
       with:
         submodules: 'recursive'
         fetch-depth: 0
-    
+
     - name: Setup Qt
       uses: jurplel/install-qt-action@v3
       with:
@@ -604,7 +608,7 @@ jobs:
         modules: 'qtmultimedia'
       continue-on-error: true
       id: qt_install_universal_desktop
-        
+
     - name: Setup Qt for ARM64
       uses: jurplel/install-qt-action@v3
       with:
@@ -615,7 +619,7 @@ jobs:
         set-env: false
       continue-on-error: true
       id: qt_install_universal_arm64
-    
+
     - name: Retry Qt Desktop Installation (if failed)
       if: steps.qt_install_universal_desktop.outcome == 'failure'
       uses: jurplel/install-qt-action@v3
@@ -625,7 +629,7 @@ jobs:
         target: 'desktop'
         arch: 'win64_msvc2022_64'
         modules: 'qtmultimedia'
-    
+
     - name: Retry Qt ARM64 Installation (if failed)
       if: steps.qt_install_universal_arm64.outcome == 'failure'
       uses: jurplel/install-qt-action@v3
@@ -635,7 +639,7 @@ jobs:
         target: 'desktop'
         arch: 'win64_msvc2022_arm64_cross_compiled'
         set-env: false
-    
+
     - name: Setup build environment
       run: |
         # Install .NET SDK first (required for WiX v5)
@@ -649,15 +653,15 @@ jobs:
         
         # Also install Visual Studio Build Tools (includes MSBuild) for compatibility
         choco install visualstudio2022buildtools --package-parameters "--includeRecommended --includeOptional --quiet --wait" -y
-    
+
     - name: Setup MSVC
       uses: ilammy/msvc-dev-cmd@v1
-    
+
     - name: Setup MSVC for ARM64
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: amd64_arm64
-    
+
     - name: Update version file
       env:
         NUMERIC_VERSION: ${{ needs.setup-version.outputs.numeric_version }}
@@ -681,7 +685,7 @@ jobs:
         }
         
         echo "x64 MSI created successfully: $($msiFile.FullName)"
-    
+
     - name: Build ARM64 MSI
       env:
         SEMANTIC_VERSION: ${{ needs.setup-version.outputs.version }}
@@ -703,8 +707,8 @@ jobs:
         }
         
         echo "ARM64 MSI created successfully: $($msiFile.FullName)"
-    
-    - name: Generate Universal Bundle  
+
+    - name: Generate Universal Bundle
       env:
         SEMANTIC_VERSION: ${{ needs.setup-version.outputs.version }}
         NUMERIC_VERSION: ${{ needs.setup-version.outputs.numeric_version }}
@@ -751,7 +755,7 @@ jobs:
             exit $LASTEXITCODE
           }
         }
-    
+
     - name: Rename universal bundle
       env:
         SEMANTIC_VERSION: ${{ needs.setup-version.outputs.version }}
@@ -769,7 +773,7 @@ jobs:
           Get-ChildItem -Path "build\installer-release" -Recurse
           exit 1
         }
-    
+
     - name: Upload Universal Installer
       uses: actions/upload-artifact@v4
       with:
@@ -782,15 +786,16 @@ jobs:
     name: macOS Development Build
     needs: setup-version
     runs-on: macos-latest
-    if: needs.setup-version.outputs.should_build == 'true'
-    
+    if: false #Disable for now
+    # if: needs.setup-version.outputs.should_build == 'true'
+
     steps:
     - name: Checkout
       uses: actions/checkout@v4
       with:
         submodules: 'recursive'
         fetch-depth: 0
-    
+
     - name: Display version info
       run: |
         echo "Using semantic version: ${{ needs.setup-version.outputs.version }}"
@@ -804,16 +809,16 @@ jobs:
         host: 'mac'
         target: 'desktop'
         modules: 'qtmultimedia'
-        
+
     - name: Set macOS deployment target for compatibility
       run: |
         echo "MACOSX_DEPLOYMENT_TARGET=14.0" >> $GITHUB_ENV
         echo "Qt6_DIR=$Qt6_DIR" >> $GITHUB_ENV
-    
+
     - name: Install dependencies
       run: |
         brew install create-dmg ffmpeg opus sdl2 sdl2_ttf
-    
+
     - name: Clean any existing build
       run: |
         rm -f .qmake.stash .qmake.cache
@@ -827,7 +832,7 @@ jobs:
         rm -rf soundio/Makefile* soundio/.qmake.stash
         rm -rf app/Makefile* app/.qmake.stash
         rm -rf app/debug app/release
-    
+
     - name: Build
       run: |
         export PATH="$Qt6_DIR/bin:$PATH"
@@ -890,7 +895,7 @@ jobs:
         # Final build
         qmake6 artemis.pro CONFIG+=release CONFIG+=sdk_no_version_check QMAKE_MACOSX_DEPLOYMENT_TARGET=14.0
         make -j$(sysctl -n hw.ncpu)
-    
+
     - name: Package macOS Development Build
       env:
         VERSION: ${{ needs.setup-version.outputs.version }}
@@ -977,7 +982,7 @@ jobs:
             exit 1
           fi
         fi
-    
+
     - name: Upload macOS Universal DMG
       uses: actions/upload-artifact@v4
       with:
@@ -989,8 +994,9 @@ jobs:
     name: Linux Development Build
     needs: setup-version
     runs-on: ubuntu-22.04
-    if: needs.setup-version.outputs.should_build == 'true'
-    
+    if: false #Disable for now
+    # if: needs.setup-version.outputs.should_build == 'true'
+
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -1003,7 +1009,7 @@ jobs:
         echo "Using semantic version: ${{ needs.setup-version.outputs.version }}"
         echo "Using numeric version: ${{ needs.setup-version.outputs.numeric_version }}"
         echo "Is prerelease: ${{ needs.setup-version.outputs.is_prerelease }}"
-    
+
     - name: Setup Qt
       uses: jurplel/install-qt-action@v3
       with:
@@ -1011,7 +1017,7 @@ jobs:
         host: 'linux'
         target: 'desktop'
         modules: 'qtmultimedia'
-    
+
     - name: Install dependencies
       run: |
         sudo apt-get update
@@ -1027,7 +1033,7 @@ jobs:
           libxext-dev libxi-dev libxinerama-dev libxrandr-dev \
           libxss-dev libxt-dev libxv-dev libxxf86vm-dev \
           libxcb-dri3-dev libx11-xcb-dev libplacebo-dev
-    
+
     - name: Clean any existing build
       run: |
         rm -f .qmake.stash .qmake.cache
@@ -1036,7 +1042,7 @@ jobs:
         rm -rf qmdnsengine/Makefile* qmdnsengine/.qmake.stash 
         rm -rf h264bitstream/Makefile* h264bitstream/.qmake.stash
         rm -rf app/Makefile* app/.qmake.stash
-    
+
     - name: Build
       run: |
         export PATH="$Qt6_DIR/bin:$PATH"
@@ -1044,7 +1050,7 @@ jobs:
         qmake6 artemis.pro CONFIG+=release "QMAKE_CXXFLAGS+=-fPIC"
         make -j$(nproc)
     
-    
+
     - name: Create dependency bundle for Linux
       run: |
         echo "=== Creating dependency bundle ==="
@@ -1138,7 +1144,7 @@ jobs:
         echo "=== Linux package contents ==="
         ls -la linux-package/
         ls -la linux-package/lib/
-    
+
     - name: Package Linux Development Build
       env:
         VERSION: ${{ needs.setup-version.outputs.version }}
@@ -1215,24 +1221,24 @@ jobs:
     runs-on: ubuntu-22.04  # Use Ubuntu 22.04 since 20.04 is deprecated
     if: false  # Temporarily disabled
     # if: needs.setup-version.outputs.should_build == 'true'
-    
+
     env:
       FFMPEG_CONFIGURE_ARGS: --enable-pic --disable-static --enable-shared --disable-all --enable-avcodec --enable-avformat --enable-swscale --enable-decoder=h264 --enable-decoder=hevc --enable-decoder=av1 --enable-hwaccel=h264_vaapi --enable-hwaccel=hevc_vaapi --enable-hwaccel=av1_vaapi --enable-hwaccel=h264_vdpau --enable-hwaccel=hevc_vdpau --enable-hwaccel=av1_vdpau --enable-hwaccel=h264_vulkan --enable-hwaccel=hevc_vulkan --enable-hwaccel=av1_vulkan --enable-libdav1d --enable-decoder=libdav1d
-    
+
     steps:
     - name: Checkout
       uses: actions/checkout@v4
       with:
         submodules: 'recursive'
         fetch-depth: 0
-    
+
     - name: Get version
       id: version
       run: |
         VERSION=${{ needs.setup-version.outputs.version }}
         echo "version=$VERSION" >> $GITHUB_OUTPUT
         echo "Using version: $VERSION"
-    
+
     - name: Setup Qt 6
       uses: jurplel/install-qt-action@v3
       with:
@@ -1242,7 +1248,7 @@ jobs:
         modules: 'qtmultimedia'
       continue-on-error: true
       id: qt_install
-        
+
     - name: Retry Qt Installation (if failed)
       if: steps.qt_install.outcome == 'failure'
       uses: jurplel/install-qt-action@v3
@@ -1251,7 +1257,7 @@ jobs:
         host: 'linux'
         target: 'desktop'
         modules: 'qtmultimedia'
-    
+
     - name: Install FUSE and build dependencies (matching Moonlight)
       run: |
         # Use the correct Vulkan SDK repository for Ubuntu 22.04 (Jammy)
@@ -1277,7 +1283,7 @@ jobs:
         sudo apt install -y vulkan-sdk || echo "Vulkan SDK installation had conflicts, proceeding without it"
         
         sudo pip3 install meson
-    
+
     - name: Build SDL2 from source (exact version used by Moonlight)
       run: |
         export SDL2_REV=86fd4ed83cdcf71fef6a57766b126e88f923acd3
@@ -1288,7 +1294,7 @@ jobs:
         make -j$(nproc)
         sudo make install
         cd ..
-    
+
     - name: Build SDL2_ttf from source (exact version used by Moonlight)
       run: |
         export SDL2_TTF_VER=2.22.0
@@ -1299,7 +1305,7 @@ jobs:
         make -j$(nproc)
         sudo make install
         cd ..
-    
+
     - name: Build libva from source (exact version used by Moonlight)
       run: |
         export LIBVA_VER=2.22.0
@@ -1310,7 +1316,7 @@ jobs:
         make -j$(nproc)
         sudo make install
         cd ..
-    
+
     - name: Build dav1d from source (exact version used by Moonlight)
       run: |
         export DAV1D_VER=1.5.0
@@ -1321,7 +1327,7 @@ jobs:
         sudo ninja install -C build
         sudo ldconfig
         cd ..
-    
+
     - name: Build libplacebo from source with patches (exact version used by Moonlight)
       run: |
         export LIBPLACEBO_REV=v7.349.0
@@ -1338,7 +1344,7 @@ jobs:
         sudo ninja install -C build
         sudo ldconfig
         cd ..
-    
+
     - name: Build FFmpeg from source (exact version and config used by Moonlight)
       run: |
         export FFMPEG_REV=87ccf995cb855f0baced9916928b7b48d8b6ed9d
@@ -1350,7 +1356,7 @@ jobs:
         sudo make install
         sudo ldconfig
         cd ..
-    
+
     - name: Download and extract linuxdeployqt
       run: |
         mkdir -p $HOME/bin
@@ -1375,7 +1381,7 @@ jobs:
         fi
         
         echo "$HOME/bin" >> $GITHUB_PATH
-    
+
     - name: Build Artemis with Qt 6 for AppImage
       run: |
         # Set Qt 6 environment (variables are set from jurplel/install-qt-action)
@@ -1477,7 +1483,7 @@ jobs:
           tail -50 appimagetool.log || true
           exit 1
         fi
-    
+
     - name: Verify AppImage was created successfully
       run: |
         ls -lh build/installer-release/
@@ -1500,7 +1506,7 @@ jobs:
           echo "ERROR: No AppImage file found!"
           exit 1
         fi
-    
+
     - name: Upload AppImage
       uses: actions/upload-artifact@v4
       with:
@@ -1513,17 +1519,17 @@ jobs:
     needs: setup-version
     runs-on: ubuntu-22.04
     if: needs.setup-version.outputs.should_build == 'true'
-    
+
     steps:
     - name: Checkout
       uses: actions/checkout@v4
       with:
         submodules: 'recursive'
         fetch-depth: 0
-    
+
     - name: Display version info
       run: echo "Using development version ${{ needs.setup-version.outputs.version }}"
-    
+
     - name: Install Flatpak and dependencies
       run: |
         sudo apt-get update
@@ -1777,7 +1783,7 @@ jobs:
         flatpak-builder --force-clean --repo=repo build-dir com.artemisdesktop.ArtemisDesktopDev.yml
         # Build a bundle that embeds Flathub as the runtime repo so runtime + GPU extensions auto-install
         flatpak build-bundle --runtime-repo=https://flathub.org/repo/flathub.flatpakrepo repo artemis-flatpak-$VERSION.flatpak com.artemisdesktop.ArtemisDesktopDev
-    
+
     - name: Upload Flatpak Development Artifacts
       uses: actions/upload-artifact@v4
       with:
@@ -1911,7 +1917,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         fetch-depth: 0  # Need full history for changelog
-    
+
     - name: Display release version info
       run: |
         echo "Creating release with version: ${{ needs.setup-version.outputs.version }}"
@@ -1968,7 +1974,7 @@ jobs:
           cat changelog.md
           echo EOF
         } >> $GITHUB_OUTPUT
-    
+
     - name: Download all artifacts
       uses: actions/download-artifact@v4
       with:
@@ -1992,7 +1998,7 @@ jobs:
         fi
 
     - name: Find and download previous artifacts if builds were skipped
-     
+
       id: find-previous
       if: steps.check-artifacts.outputs.artifacts_exist == 'false'
       run: |
@@ -2035,7 +2041,7 @@ jobs:
     - name: List downloaded files for debugging
       if: steps.check-artifacts.outputs.artifacts_exist == 'true'
       run: ls -R artifacts
-      
+
     - name: List reused artifacts for debugging
       if: steps.check-artifacts.outputs.artifacts_exist == 'false'
       run: |
@@ -2045,7 +2051,7 @@ jobs:
         else
           echo "No reused artifacts available"
         fi
-    
+
     - name: Create Development Release
       uses: softprops/action-gh-release@v1
       with:

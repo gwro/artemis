@@ -35,6 +35,7 @@ debug/
 *.swp
 *.swo
 *~
+*.iml
 
 # macOS
 .DS_Store
