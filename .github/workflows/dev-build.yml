@@ -1590,12 +1590,6 @@ jobs:
             no-autodownload: false
             add-ld-path: lib
         modules:
-          - name: opus
-            sources:
-              - type: archive
-                url: https://downloads.xiph.org/releases/opus/opus-1.4.tar.gz
-                sha256: c9b32b4253be5ae63d1ff16eea06b94b5f0f2951b7a02aceef58e3a3ce49c51f
-          
           - name: sdl2
             sources:
               - type: archive
@@ -1693,27 +1687,6 @@ jobs:
                     branch: main
                     dest: third_party/spirv-tools/external/spirv-headers
           
-          # Custom FFmpeg with CUDA/NVDEC/NVENC, VAAPI, and VDPAU (shared libs in /app/lib)
-          - name: ffmpeg
-            buildsystem: simple
-            build-commands:
-              - export PKG_CONFIG_PATH=/app/lib/pkgconfig:${PKG_CONFIG_PATH}
-              - |
-                ./configure \
-                  --prefix=/app \
-                  --enable-shared --disable-static \
-                  --disable-debug \
-                  --enable-gpl --enable-nonfree \
-                  --enable-libdrm --enable-vaapi --enable-vdpau \
-                  --enable-vulkan --enable-libplacebo \
-                  --enable-openssl
-              - make -j$(nproc)
-              - make install
-            sources:
-              - type: git
-                url: https://github.com/FFmpeg/FFmpeg.git
-                branch: release/6.1
-          
           - name: artemis-desktop-dev
             buildsystem: simple
             build-commands:
@@ -1726,8 +1699,6 @@ jobs:
               - rm -rf AntiHooking/ || true
               - rm -rf config.tests/SL/ || true
               - rm -f app/test_*.cpp || true
-              # Ensure our pkg-config entries (ffnvcodec, ffmpeg libs) are found first
-              - export PKG_CONFIG_PATH=/app/lib/pkgconfig:${PKG_CONFIG_PATH}
               - qmake6 artemis.pro CONFIG+=release "QMAKE_CXXFLAGS+=-fPIC"
               - make -j$(nproc)
               - install -Dm755 app/artemis /app/bin/artemis-dev
@@ -1889,9 +1860,9 @@ jobs:
 
   create-dev-release:
     name: Create Development Release
-    needs: [setup-version, build-windows-x64-portable, build-windows-arm64-portable, build-windows-universal-installer, build-macos-dev, build-linux-dev, build-flatpak-dev, build-raspberry-pi-dev]
+    needs: [setup-version, build-flatpak-dev]
     runs-on: ubuntu-latest
-    if: (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && needs.setup-version.outputs.should_build == 'true'  # Create releases for develop/main branches when builds ran
+    if: (github.ref == 'refs/heads/fix/hdr-renderer-logic' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && needs.setup-version.outputs.should_build == 'true'  # Create releases for develop/main branches when builds ran
     
     steps:
     - name: Checkout
