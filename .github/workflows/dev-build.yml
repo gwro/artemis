@@ -1576,13 +1576,6 @@ jobs:
             subdirectories: true
             no-autodownload: false
             add-ld-path: lib
-          # NVIDIA GL driver extension (auto-installs if applicable)
-          org.freedesktop.Platform.GL.nvidia:
-            version: '23.08'
-            directory: gl-nvidia
-            subdirectories: true
-            no-autodownload: false
-            add-ld-path: lib
           # VA-API drivers for hardware decode (Intel and AMD)
           org.freedesktop.Platform.VAAPI.Intel:
             version: '23.08'
@@ -1627,17 +1620,6 @@ jobs:
               - type: archive
                 url: https://github.com/intel/libva/releases/download/2.22.0/libva-2.22.0.tar.bz2
                 sha256: e3da2250654c8d52b3f59f8cb3f3d8e7fb1a2ee64378dbc400fbc5663de7edb8
-          
-          # NVIDIA NVDEC/NVENC support (headers)
-          - name: nv-codec-headers
-            buildsystem: simple
-            build-commands:
-              - make -j$(nproc)
-              - make PREFIX=/app install
-            sources:
-              - type: git
-                url: https://github.com/FFmpeg/nv-codec-headers.git
-                branch: master
           
           # Build libplacebo from source for Vulkan/HDR support (critical for Steam Deck)
           - name: libplacebo
@@ -1723,7 +1705,6 @@ jobs:
                   --disable-debug \
                   --enable-gpl --enable-nonfree \
                   --enable-libdrm --enable-vaapi --enable-vdpau \
-                  --enable-cuda-llvm --enable-nvenc --enable-nvdec --enable-cuvid \
                   --enable-vulkan --enable-libplacebo \
                   --enable-openssl
               - make -j$(nproc)
@@ -1736,10 +1717,8 @@ jobs:
           - name: artemis-desktop-dev
             buildsystem: simple
             build-commands:
-              - install -d /app/lib/GL # Workaround for NVIDIA driver issue
               # Create extension mount directories for hardware acceleration at the correct paths
               - install -d /app/gl-default
-              - install -d /app/gl-nvidia
               - install -d /app/vaapi-intel
               - install -d /app/vaapi-amd
               - rm -f .qmake.stash .qmake.cache
