@@ -1536,14 +1536,14 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y flatpak flatpak-builder
         sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-        sudo flatpak install -y flathub org.freedesktop.Platform//23.08 org.freedesktop.Sdk//23.08 org.kde.Platform//6.6 org.kde.Sdk//6.6
+        sudo flatpak install -y flathub org.freedesktop.Platform//25.08 org.freedesktop.Sdk//25.08 org.freedesktop.Platform.ffmpeg-full//25.08 org.kde.Platform//6.8 org.kde.Sdk//6.8
 
     - name: Create Flatpak manifest with libplacebo for Steam Deck compatibility
       run: |
         cat > com.artemisdesktop.ArtemisDesktopDev.yml << 'EOF'
         app-id: com.artemisdesktop.ArtemisDesktopDev
         runtime: org.kde.Platform
-        runtime-version: '6.6'
+        runtime-version: '6.8'
         sdk: org.kde.Sdk
         command: artemis-dev
         finish-args:
@@ -1559,9 +1559,9 @@ jobs:
           - --filesystem=/sys/dev/char:ro
           - --filesystem=/sys/class/drm:ro
           # Prefer runtime-provided VA-API drivers mounted via extensions
-          - --env=LIBVA_DRIVERS_PATH=/app/vaapi-intel/lib/dri:/app/vaapi-amd/lib/dri:/usr/lib/x86_64-linux-gnu/dri:/usr/lib/dri
+          # - --env=LIBVA_DRIVERS_PATH=/app/vaapi-intel/lib/dri:/app/vaapi-amd/lib/dri:/usr/lib/x86_64-linux-gnu/dri:/usr/lib/dri
           # Auto-detect render node
-          - --env=GST_VAAPI_DRM_DEVICE=/dev/dri/renderD128
+          # - --env=GST_VAAPI_DRM_DEVICE=/dev/dri/renderD128
           # Allow software fallback for Vulkan if hardware fails
           - --env=PLVK_ALLOW_SOFTWARE=1
           # Mesa/SDL optimizations
@@ -1571,26 +1571,20 @@ jobs:
         add-extensions:
           # GL (Mesa) driver extension that matches the runtime branch
           org.freedesktop.Platform.GL.default:
-            version: '23.08'
+            version: '25.08'
             directory: gl-default
             subdirectories: true
             no-autodownload: false
             add-ld-path: lib
           # VA-API drivers for hardware decode (Intel and AMD)
-          org.freedesktop.Platform.VAAPI.Intel:
-            version: '23.08'
-            directory: vaapi-intel
-            subdirectories: true
-            no-autodownload: false
-            add-ld-path: lib
           org.freedesktop.Platform.VAAPI.AMD:
-            version: '23.08'
+            version: '25.08'
             directory: vaapi-amd
             subdirectories: true
             no-autodownload: false
             add-ld-path: lib
           org.freedesktop.Platform.ffmpeg-full:
-            version: '23.08'
+            version: '25.08'
             directory: lib/ffmpeg
             add-ld-path: .
             no-autodownload: false
@@ -1697,7 +1691,7 @@ jobs:
             build-commands:
               # Create extension mount directories for hardware acceleration at the correct paths
               - install -d /app/gl-default
-              - install -d /app/vaapi-intel
+              # - install -d /app/vaapi-intel
               - install -d /app/vaapi-amd
               - rm -f .qmake.stash .qmake.cache
               - find . -name "Makefile*" -delete || true
