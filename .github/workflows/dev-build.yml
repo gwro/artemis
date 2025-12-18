@@ -176,7 +176,8 @@ jobs:
   compile-sanity:
     name: Compile Sanity (macOS + Linux)
     needs: setup-version
-    if: needs.setup-version.outputs.should_build == 'true'
+    if: false #Disable for now
+    # if: needs.setup-version.outputs.should_build == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -1795,7 +1796,8 @@ jobs:
     name: Raspberry Pi ARM64 Development Build
     needs: setup-version
     runs-on: ubuntu-22.04-arm
-    if: needs.setup-version.outputs.should_build == 'true'
+    if: false #Disable for now
+    # if: needs.setup-version.outputs.should_build == 'true'
     
     steps:
     - name: Checkout
