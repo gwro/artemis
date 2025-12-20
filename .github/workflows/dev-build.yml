@@ -1536,7 +1536,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y flatpak flatpak-builder
         sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-        sudo flatpak install -y flathub org.freedesktop.Platform//25.08 org.freedesktop.Sdk//25.08 org.freedesktop.Platform.ffmpeg-full//25.08 org.kde.Platform//6.8 org.kde.Sdk//6.8
+        sudo flatpak install -y flathub org.freedesktop.Platform//25.08 org.freedesktop.Sdk//25.08 org.kde.Platform//6.8 org.kde.Sdk//6.8
 
     - name: Create Flatpak manifest with libplacebo for Steam Deck compatibility
       run: |
