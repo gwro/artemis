@@ -1583,7 +1583,7 @@ jobs:
             subdirectories: true
             no-autodownload: false
             add-ld-path: lib
-          org.freedesktop.Platform.ffmpeg-full:
+          org.freedesktop.Platform.ffmpeg:
             version: '25.08'
             directory: lib/ffmpeg
             add-ld-path: .
